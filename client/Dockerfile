@@ -1,9 +1,12 @@
-
 # Multi-stage build for React/Vite frontend
 FROM node:18-alpine AS builder
 
+# FIX: Set context to the client folder itself
 WORKDIR /app
+COPY . ./client/
+WORKDIR /app/client
 
+# Now everything is in the right place
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
@@ -14,17 +17,16 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 RUN npm run build
 
-# Production stage with nginx
+# Production stage
 FROM nginx:alpine AS production
 
 RUN apk add --no-cache curl
 
-# This line is FIXED – now correctly points to nginx.conf inside client/
+# This now finds nginx.conf because we're in the client folder
 COPY nginx.conf /etc/nginx/nginx.conf
 
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/client/dist /usr/share/nginx/html
 
-# Non-root nginx setup
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \
