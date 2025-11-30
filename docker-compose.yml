@@ -1,11 +1,9 @@
 version: '3.8'
 
 services:
-  # Backend API Server
+  # Backend – Pulls from your Docker Hub
   seedbox-backend:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
+    image: rahulrajparida/backend:latest   # Your image on Docker Hub
     container_name: seedbox-backend
     restart: unless-stopped
     ports:
@@ -18,21 +16,21 @@ services:
     networks:
       - seedbox-network
 
-  # Frontend Web Server  
+  # Frontend – Pulls from your Docker Hub
   seedbox-frontend:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3001}
+    image: rahulrajparida/frontend:latest   # Your image on Docker Hub
     container_name: seedbox-frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-5174}:80"
+      - "${FRONTEND_PORT:-80}:80"        # Now using port 80 → 80 (cleaner)
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://seedbox-backend:3001}
+      # or just rely on .env file if you prefer
     depends_on:
       - seedbox-backend
     networks:
       - seedbox-network
+
 volumes:
   seedbox_data:
     driver: local
