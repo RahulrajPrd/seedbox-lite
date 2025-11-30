@@ -9,7 +9,7 @@ services:
     ports:
       - "${BACKEND_PORT:-3001}:3001"
     env_file:
-      - .env
+      - .env.docker
     volumes:
       - seedbox_data:/app/data
       - seedbox_cache:/app/cache
